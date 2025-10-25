@@ -1,36 +1,61 @@
 package vista;
 
-import controlador.LoginController;
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class ConfirmarReserva {
     private JPanel confirmarReserva;
     private JLabel lblDatosReserva;
-    private JButton btnFinalizarReserva;
+    private JButton btnVerReservas;
+    private JButton btnVolverLogin;
 
-    public ConfirmarReserva() {
-        btnFinalizarReserva.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(confirmarReserva,
-                        "Reserva completada correctamente.",
-                        "Éxito",
-                        JOptionPane.INFORMATION_MESSAGE);
-                volverALogin();
-            }
-        });
+    private String nombre;
+    private int edad;
+    private int cantidad;
+    private String checkIn;
+    private String checkOut;
+    private String habitacion;
+
+    public ConfirmarReserva(String nombre, int edad, int cantidad, String checkIn, String checkOut, String habitacion) {
+        this.nombre = nombre;
+        this.edad = edad;
+        this.cantidad = cantidad;
+        this.checkIn = checkIn;
+        this.checkOut = checkOut;
+        this.habitacion = habitacion;
+
+        // Mostrar los datos en la etiqueta
+        lblDatosReserva.setText("<html>Nombre: " + nombre +
+                "<br>Edad: " + edad +
+                "<br>Cantidad de personas: " + cantidad +
+                "<br>Check-In: " + checkIn +
+                "<br>Check-Out: " + checkOut +
+                "<br>Habitación: " + habitacion + "</html>");
+
+        btnVerReservas.addActionListener(this::mostrarReserva);
+        btnVolverLogin.addActionListener(this::volverALogin);
     }
 
-    private void volverALogin() {
-        // Abrir ventana de login
+    private void mostrarReserva(ActionEvent e) {
+        // Simplemente podemos mostrar un JOptionPane con la reserva
+        JOptionPane.showMessageDialog(confirmarReserva,
+                "Reserva:\n" +
+                        "Nombre: " + nombre + "\n" +
+                        "Edad: " + edad + "\n" +
+                        "Cantidad: " + cantidad + "\n" +
+                        "Check-In: " + checkIn + "\n" +
+                        "Check-Out: " + checkOut + "\n" +
+                        "Habitación: " + habitacion,
+                "Mi Reserva",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
 
-        HotelApp login  = new HotelApp(); // tu clase vista de login
-        new LoginController(login);
+    private void volverALogin(ActionEvent e) {
+        HotelApp login  = new HotelApp();
+        new controlador.LoginController(login);
+
         JFrame frame = new JFrame("Login Hotel");
-        frame.setContentPane(login.getPanel()); // getPanel() devuelve el JPanel de Login
+        frame.setContentPane(login.getPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);

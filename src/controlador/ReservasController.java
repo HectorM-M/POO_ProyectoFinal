@@ -1,5 +1,6 @@
 package controlador;
 
+import java.sql.SQLException;
 import vista.HotelApp;
 import vista.Reservas;
 import vista.ConfirmarReserva;
@@ -126,11 +127,26 @@ public class ReservasController {
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
+
+            int idUsuario = 1; // temporal hasta tener login real
+            try {
+                modelo.ReservasDB.guardarReserva(nombre, edad, cantidad, checkInStr, checkOutStr, habitacion, idUsuario);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(vista.getPanel(),
+                        "Error al guardar la reserva: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
                 // Abrir la vista de login con su controlador
                 HotelApp loginVista = new HotelApp();
                 new LoginController(loginVista);
             //aca nuestra instancia
-            ConfirmarReserva confirmacion = new ConfirmarReserva();
+            ConfirmarReserva confirmacion = new ConfirmarReserva(
+                    nombre, edad, cantidad, checkInStr, checkOutStr, habitacion
+            );
 
             // Mostrar ventana de confirmación
             JFrame frame = new JFrame("Confirmación de reserva");

@@ -4,6 +4,8 @@ import vista.Reservas;
 
 import javax.swing.*;
 
+import java.sql.SQLException;
+
 public class LoginController {
     private HotelApp vista;
 
@@ -16,12 +18,12 @@ public class LoginController {
 }
 
     private void verificarCredenciales() {
-        String usuario = vista.getUsuario();
-        String contrasena = vista.getContrasena();
+        String usuarioIngresado = vista.getUsuario();
+        String contrasenaIngresada = vista.getContrasena();
 
-        if (usuario.equals("admin") && contrasena.equals("123456")) {
+        if (modelo.usuario.verificar(usuarioIngresado, contrasenaIngresada)) {
             Reservas reservas = new Reservas();
-            new controlador.ReservasController(reservas);
+            new ReservasController(reservas);
 
             JFrame frame = new JFrame("Panel Reservas");
             frame.setContentPane(reservas.getPanel());
@@ -38,39 +40,57 @@ public class LoginController {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-        private void crearCuenta() {
-            //obtenemos datos del nuevio usuario
 
-                String nuevoUsuario = vista.getNuevoUsuario();
-                String correo = vista.getCorreo();
-                String nuevaContrasena = vista.getNuevaContrasena();
+    private void crearCuenta() {
+        String nuevoUsuario = vista.getNuevoUsuario();
+        String correo = vista.getCorreo();
+        String nuevaContrasena = vista.getNuevaContrasena();
 
-                if (validarDatos(nuevoUsuario, nuevaContrasena, correo)) {
-                    JOptionPane.showMessageDialog(vista.getPanel(),
-                            "Cuenta registrada, Bienvenido " + nuevoUsuario + "!",
-                            "Éxito",
-                            JOptionPane.INFORMATION_MESSAGE);
-                    Reservas reservas = new Reservas();
-                    new ReservasController(reservas); // conecta el listener
+        if (!validarDatos(nuevoUsuario, nuevaContrasena, correo)) {
+            return; // datos inválidos
+        }
 
-                    controlador.ReservasController reservasController = new controlador.ReservasController(reservas);
-                    JFrame frame = new JFrame("Panel Reservas");
-                    frame.setContentPane(reservas.getPanel());
-                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    frame.pack();
-                    frame.setLocationRelativeTo(null);
-                    frame.setVisible(true);
-
-                    // 🔹 Cerramos la ventana actual
-                    SwingUtilities.getWindowAncestor(vista.getPanel()).dispose();
-
-                } else {
-                    JOptionPane.showMessageDialog(vista.getPanel(),
-                            "Datos inválidos, intente de nuevo",
-                            "ERROR",
-                            JOptionPane.ERROR_MESSAGE);
-                }
+        try {
+            if (modelo.usuario.existeUsuarioOCorreo(nuevoUsuario, correo)) {
+                JOptionPane.showMessageDialog(vista.getPanel(),
+                        "El usuario o correo ya existe. Intente con otro.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
             }
+
+            modelo.usuario nuevo = new modelo.usuario(nuevoUsuario, nuevaContrasena, correo);
+            if (nuevo.guardar()) {
+                JOptionPane.showMessageDialog(vista.getPanel(),
+                        "Cuenta registrada, Bienvenido " + nuevoUsuario + "!",
+                        "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                Reservas reservas = new Reservas();
+                new ReservasController(reservas);
+
+                JFrame frame = new JFrame("Panel Reservas");
+                frame.setContentPane(reservas.getPanel());
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.pack();
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+
+                SwingUtilities.getWindowAncestor(vista.getPanel()).dispose();
+            } else {
+                JOptionPane.showMessageDialog(vista.getPanel(),
+                        "No se pudo registrar el usuario.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(vista.getPanel(),
+                    "Ocurrió un error al guardar el usuario: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
 
     private boolean validarDatos(String nombre, String contrasena, String correo) {
